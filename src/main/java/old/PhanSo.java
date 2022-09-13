@@ -1,3 +1,5 @@
+package old;
+
 import java.util.Objects;
 public class PhanSo {
   private int numerator;
