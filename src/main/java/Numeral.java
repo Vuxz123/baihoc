@@ -12,6 +12,7 @@ public class Numeral extends Expression{
 
     @Override
     public String toString() {
-        return "" + value;
+        if(value - Math.round(value) > 0) return "" + value;
+        return "" + (int) value;
     }
 }

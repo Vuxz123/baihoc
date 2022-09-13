@@ -10,6 +10,6 @@ public class Multiplication extends BinaryExpression{
 
     @Override
     public String toString() {
-        return  left.toString() + " * " + right.toString();
+        return "(" + left.toString() + " * " + right.toString() + ")";
     }
 }
