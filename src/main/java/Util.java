@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Util {
   static String[] a = {
-    "int", "long", "byte", "char", "short", "float", "double", "boolean", "void"
+    "int", "long", "byte", "char", "short", "float", "double", "boolean", "void", "T"
   };
 
   static String[] pa = {"java.io.","java.util.","java.lang."};
@@ -27,7 +27,11 @@ public class Util {
     if (isBracket(class_string)) {
       class_string = class_string.substring(0, class_string.length() - 1);
       List<String> par = Arrays.asList(class_string.split("<"));
-      String a1 = getClass1(par.get(0), raw);
+      String a1 = "";
+      try{
+        a1 = getClass1(par.get(0), raw);
+      }catch (ClassNotFoundException e) {
+      }
       String a2 = getClass2(par.get(1), raw);
       return a1 + "<" + a2 + ">";
     } else {
@@ -36,7 +40,18 @@ public class Util {
   }
 
   private static String getClass1(String class_string, String raw) throws ClassNotFoundException {
-    if (Arrays.stream(a).anyMatch(s -> s.equals(class_string))) return class_string;
+    if(class_string.endsWith("[]")){
+      class_string = class_string.substring(0, class_string.length() - 2);
+      class_string = getClass1(class_string, raw);
+      return class_string;
+    }
+    if(class_string.endsWith("...")){
+      class_string = class_string.substring(0, class_string.length() - 3);
+      class_string = getClass1(class_string, raw);
+      return class_string;
+    }
+    String finalClass_string = class_string;
+    if (Arrays.stream(a).anyMatch(s -> s.equals(finalClass_string))) return class_string;
     if (custom.containsKey(class_string)) return custom.get(class_string);
     return getClass3(class_string, raw);
   }

@@ -1,5 +1,8 @@
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,7 +92,6 @@ public class Week10 {
       String temp = null;
       StringBuilder res = new StringBuilder();
       boolean stage = false;
-      int i = 0;
       while (scanner.hasNext()) {
         temp = scanner.next();
         if (stage) {
@@ -112,15 +114,20 @@ public class Week10 {
           case "protected":
             break;
           default:
-            if (i == 0) {
-              i++;
-              continue;
+            try {
+              if(Util.getClass(temp, "") == null){
+                stage = true;
+                res.append(temp).append(" ");
+                break;
+              }
+            } catch (ClassNotFoundException e) {
+              stage = true;
+              res.append(temp).append(" ");
+              break;
             }
-            stage = true;
-            res.append(temp).append(" ");
-            break;
         }
       }
+      System.out.println(res);
       return res.toString();
     }
 
