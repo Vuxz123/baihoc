@@ -1,5 +1,3 @@
-import com.sun.org.apache.bcel.internal.util.ClassLoader;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
@@ -14,12 +12,26 @@ public class Week10 {
     private String name;
     private List<String> params;
 
+    public MethodFormat(){
+      reset();
+    }
+
     public MethodFormat(String name, List<String> params) {
       this.name = name;
       this.params = params;
     }
 
     public MethodFormat(String rawinput) {
+      analyze(rawinput);
+    }
+
+    public void reset(){
+      rawinput = null;
+      name = null;
+      params = null;
+    }
+
+    public void analyse(String rawinput) {
       analyze(rawinput);
     }
 
@@ -41,7 +53,6 @@ public class Week10 {
 
     private void analyze(String rawinput) {
       String input = normalize(rawinput);
-      System.out.println(input + '\n');
       String[] a = input.split("\\(", 2);
       this.name = a[0];
       StringBuilder b = new StringBuilder(a[1]);
@@ -49,10 +60,6 @@ public class Week10 {
       a[1] = b.toString();
 
       analyzeParam(a[1]);
-
-      for (String s : a) {
-        System.out.println(s + '\n');
-      }
     }
 
     private void analyzeParam(String rawparam) {
@@ -60,6 +67,9 @@ public class Week10 {
       List<String> param_types = new ArrayList<>(rawparams.size());
       rawparams.forEach(
           s -> {
+            if(s.startsWith(" ")) {
+              s = s.substring(1,s.length()-1);
+            }
             String[] temp = s.split(" ");
             String cls = temp[0];
             try {
@@ -69,9 +79,6 @@ public class Week10 {
             }
             param_types.add(cls);
           });
-      for (String s : param_types) {
-        System.out.println(s + "-" + '\n');
-      }
       params = param_types;
     }
 
@@ -116,6 +123,15 @@ public class Week10 {
       }
       return res.toString();
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(this.name).append("(");
+      params.forEach(s -> builder.append(s).append(","));
+      builder.setCharAt(builder.length()-1, ')');
+      return builder.toString();
+    }
   }
 
   private static List<String> lineSeperate(String input) {
@@ -127,10 +143,25 @@ public class Week10 {
     return input.stream()
         .filter(
             s -> {
-              if (s.contains("static") && !s.contains("/") && !s.contains("*") && s.contains("(") && !s.contains("new")) return true;
+              if (s.contains("static") && !s.contains("/") && !s.contains("*") && s.contains("(") && !s.contains("new") && !s.contains("=")) return true;
               return false;
             })
         .collect(Collectors.toList());
+  }
+
+  private static void analyseClass(List<String> lines){
+    lines.get(0).contains("package");
+    String package_ = lines.get(0);
+    package_ = package_.substring(0 + 8, package_.length()-1);
+    lines = lines.stream().filter(s -> s.contains(" class ") && !s.contains("\"")).collect(Collectors.toList());
+    String finalPackage_ = package_;
+    lines.forEach(s -> {
+      int bi = s.indexOf("class");
+      int ei = s.indexOf("{");
+      String temp = s.substring(bi + 6, ei - 1);
+      temp.trim();
+      Util.add(temp, finalPackage_ + "." + temp);
+    });
   }
 
   private static void analyseImport(List<String> lines) {
@@ -145,9 +176,16 @@ public class Week10 {
   public static List<String> getAllFunction(String fileContent) {
     List<String> lines = lineSeperate(fileContent);
     List<String> methods = methodCollect(lines);
+    List<String> res = new ArrayList<>();
     analyseImport(lines);
+    analyseClass(lines);
     if (methods.isEmpty()) throw new RuntimeException("Không tìm thấy methods nào");
-    MethodFormat methodFormat = new MethodFormat(methods.get(0));
-    return methods;
+    MethodFormat format = new MethodFormat();
+    for (String s: methods){
+      format.reset();
+      format.analyse(s);
+      res.add(format.toString());
+    }
+    return res;
   }
 }

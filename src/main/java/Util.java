@@ -10,6 +10,8 @@ public class Util {
     "int", "long", "byte", "char", "short", "float", "double", "boolean", "void"
   };
 
+  static String[] pa = {"java.io.","java.util.","java.lang."};
+
   static HashMap<String, String> custom = new HashMap<>();
 
   private static boolean isBracket(String a) {
@@ -36,14 +38,7 @@ public class Util {
   private static String getClass1(String class_string, String raw) throws ClassNotFoundException {
     if (Arrays.stream(a).anyMatch(s -> s.equals(class_string))) return class_string;
     if (custom.containsKey(class_string)) return custom.get(class_string);
-    Class<?> cls;
-    try {
-      cls = Class.forName(class_string, false, ClassLoader.getSystemClassLoader());
-    } catch (ClassNotFoundException e) {
-      throw new ClassNotFoundException(
-          String.format("Không tìm thấy class này: class <%s> trong <%s>", class_string, raw));
-    }
-    return cls.getCanonicalName();
+    return getClass3(class_string, raw);
   }
 
   public static String getClass2(String class_string, String raw) {
@@ -64,11 +59,32 @@ public class Util {
     return param_types.toString();
   }
 
+  private static String getClass3(String class_string, String raw) throws ClassNotFoundException {
+    String res = null;
+    for (String s : pa) {
+      if((res = getClass4(s+class_string, raw)) == null) continue;
+      break;
+    }
+    if(res == null) throw new ClassNotFoundException(String.format("Không tìm thấy class này: class <%s> trong <%s>", class_string, raw));
+    add(class_string, res);
+    return res;
+  }
+
+  private static String getClass4(String class_string, String raw) {
+    Class<?> cls;
+    try {
+      cls = Class.forName(class_string, false, Week10.class.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+    return cls.getCanonicalName();
+  }
+
   public static void add(String class_name, String fqtn) {
     custom.put(class_name, fqtn);
   }
 
-  private static void print(List<String> a) {
+  public static void print(List<String> a) {
     for (String s : a) {
       System.out.println(s);
     }
