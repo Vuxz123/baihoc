@@ -1,3 +1,8 @@
 public abstract class Expression {
-    public abstract double evaluate();
+
+  /** abc. */
+  public abstract double evaluate();
+
+  /** abc */
+  public abstract String toString();
 }
